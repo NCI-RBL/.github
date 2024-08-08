@@ -1,0 +1,36 @@
+name: Sync Forks
+# adapted from CCBR/.github: https://github.com/CCBR/.github/blob/b51390632d8093aa2a3c8cbb871a2f2b5c7d5aae/.github/workflows/sync-forks.yml
+
+on:
+  schedule:
+    - cron: "23 10 * * *" # once every day
+  push:
+    paths:
+      - .github/workflows/sync-forks.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  # Token must be created by someone with write access for all forks.
+  # Be sure to 'configure SSO' from the token creation page for each fork organization.
+  GH_TOKEN: ${{ secrets.SYNC_FORK_TOKEN }}
+  UPSTREAM_OWNER: NCI-RBL
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        FORK_OWNER: [ abcsFrederick ]
+        REPO: [ {upstream: iCLIP_V3, fork: iCLIP_V3}, 
+                {upstream: Dockers, fork: NCI-RBL-Dockers},
+                {upstream: RNA-seek, fork: RNA-seek}
+              ]
+
+    steps:
+      - name: sync forked repos
+        run: |
+          gh repo sync ${{ matrix.FORK_OWNER }}/${{ matrix.REPO.fork }} --source $UPSTREAM_OWNER/${{ matrix.REPO.upstream }} --force
