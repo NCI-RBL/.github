@@ -26,8 +26,7 @@ jobs:
       matrix:
         FORK_OWNER: [ abcsFrederick ]
         REPO: [ {upstream: iCLIP_V3, fork: iCLIP_V3}, 
-                {upstream: Dockers, fork: NCI-RBL-Dockers},
-                {upstream: RNA-seek, fork: RNA-seek}
+                {upstream: Dockers, fork: NCI-RBL-Dockers}
               ]
 
     steps:
