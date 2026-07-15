@@ -13,9 +13,6 @@ permissions:
   contents: write
 
 env:
-  # Token must be created by someone with write access for all forks.
-  # Be sure to 'configure SSO' from the token creation page for each fork organization.
-  GH_TOKEN: ${{ secrets.SYNC_FORK_TOKEN }}
   UPSTREAM_OWNER: NCI-RBL
 
 jobs:
@@ -24,12 +21,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        FORK_OWNER: [ abcsFrederick ]
-        REPO: [ {upstream: iCLIP_V3, fork: iCLIP_V3}, 
-                {upstream: Dockers, fork: NCI-RBL-Dockers}
-              ]
+        FORK_OWNER: [abcsFrederick]
+        REPO:
+          [
+            { upstream: iCLIP_V3, fork: iCLIP_V3 },
+            { upstream: Dockers, fork: NCI-RBL-Dockers },
+          ]
 
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.CCBR_BOT_APP_ID }}
+          private-key: ${{ secrets.CCBR_BOT_PRIVATE_KEY }}
+          owner: ${{ matrix.FORK_OWNER }}
       - name: sync forked repos
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           gh repo sync ${{ matrix.FORK_OWNER }}/${{ matrix.REPO.fork }} --source $UPSTREAM_OWNER/${{ matrix.REPO.upstream }} --force
